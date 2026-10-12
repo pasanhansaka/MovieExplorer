@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { FavoritesPage } from '../../pages/FavoritesPage.tsx'
 import { MovieCard } from '../../components/movie/MovieCard.tsx'
 import { AppProviders } from '../../app/providers.tsx'
@@ -16,6 +16,22 @@ const testMovie: Movie = {
   vote_average: 6.8,
   vote_count: 3500,
 }
+
+// Mock authenticated user so favorites can be saved and retrieved in tests
+vi.mock('../../features/auth/AuthContext.tsx', () => ({
+  useAuth: () => ({
+    user: { id: 'test-user-id', email: 'tester@example.com', username: 'Tester' },
+    session: null,
+    loading: false,
+    error: null,
+    signIn: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+    refreshProfile: vi.fn(),
+    isConfigured: false,
+  }),
+  AuthProvider: ({ children }: any) => <>{children}</>,
+}))
 
 describe('Favorites Flow Integration', () => {
   beforeEach(() => {
@@ -35,7 +51,7 @@ describe('Favorites Flow Integration', () => {
     expect(screen.getByText(/your watchlist is empty/i)).toBeInTheDocument()
     unmount()
 
-    // 2. Add movie to favorites via MovieCard
+    // 2. Add movie to favorites via MovieCard for authenticated user
     const { unmount: unmountCard } = render(
       <AppProviders>
         <BrowserRouter>

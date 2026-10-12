@@ -214,7 +214,7 @@ export const MovieDetailsPage: React.FC = () => {
           </Box>
 
           {/* Movie Information & Actions */}
-          <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ flexGrow: 1, minWidth: 0, width: '100%' }}>
             {/* Title & Tagline */}
             <Typography
               variant="h2"

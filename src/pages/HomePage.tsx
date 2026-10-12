@@ -1,34 +1,70 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
   Container,
   Box,
   Typography,
   ToggleButtonGroup,
   ToggleButton,
+  Button,
+  CircularProgress,
 } from '@mui/material'
 import WhatshotRoundedIcon from '@mui/icons-material/WhatshotRounded'
-import { useTrendingMovies } from '../features/movies/queries.ts'
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
+import { useInView } from 'react-intersection-observer'
+import { useInfiniteTrendingMovies } from '../features/movies/queries.ts'
 import { HeroSection } from '../components/movie/HeroSection.tsx'
 import { MovieGrid } from '../components/movie/MovieGrid.tsx'
 import { HeroSkeleton, MovieGridSkeleton } from '../components/feedback/LoadingSkeleton.tsx'
 import { ErrorState } from '../components/feedback/ErrorState.tsx'
 import { EmptyState } from '../components/feedback/EmptyState.tsx'
 import { normalizeApiError } from '../utils/apiError.ts'
+import type { Movie } from '../types/movie.ts'
 
 export const HomePage: React.FC = () => {
   const [timeWindow, setTimeWindow] = useState<'day' | 'week'>('week')
 
   const {
-    data: trendingData,
+    data,
     isLoading,
     isError,
     error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     refetch,
-  } = useTrendingMovies(timeWindow)
+  } = useInfiniteTrendingMovies(timeWindow)
 
-  const movies = trendingData?.results || []
-  const heroMovie = movies.length > 0 ? movies[0] : null
-  const trendingList = movies.slice(1)
+  // Flatten and deduplicate movies across pages
+  const allMovies = useMemo(() => {
+    if (!data?.pages) return []
+    const seen = new Set<number>()
+    const list: Movie[] = []
+
+    for (const page of data.pages) {
+      for (const item of page.results) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id)
+          list.push(item)
+        }
+      }
+    }
+    return list
+  }, [data])
+
+  const heroMovie = allMovies.length > 0 ? allMovies[0] : null
+  const trendingList = allMovies.slice(1)
+
+  // Infinite scroll observer sentinel
+  const { ref: loadMoreObserverRef, inView } = useInView({
+    rootMargin: '400px',
+    threshold: 0,
+  })
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage])
 
   return (
     <Box sx={{ pb: 8 }}>
@@ -130,7 +166,50 @@ export const HomePage: React.FC = () => {
             actionLabel="Refresh Catalog"
           />
         ) : (
-          <MovieGrid movies={trendingList} />
+          <>
+            <MovieGrid movies={trendingList} />
+
+            {/* Load More and Infinite Scroll Trigger */}
+            <Box sx={{ mt: 6, mb: 4, textAlign: 'center' }}>
+              {hasNextPage && (
+                <>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    disabled={isFetchingNextPage}
+                    onClick={() => fetchNextPage()}
+                    endIcon={
+                      isFetchingNextPage ? (
+                        <CircularProgress size={18} color="inherit" />
+                      ) : (
+                        <KeyboardArrowDownRoundedIcon />
+                      )
+                    }
+                    sx={{
+                      px: 4,
+                      py: 1.25,
+                      fontWeight: 700,
+                      borderRadius: 3,
+                      borderColor: 'divider',
+                      color: 'text.primary',
+                      '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
+                    }}
+                  >
+                    {isFetchingNextPage ? 'Loading more movies...' : 'Load More Movies'}
+                  </Button>
+
+                  {/* Invisible Intersection Observer sentinel element */}
+                  <Box ref={loadMoreObserverRef} sx={{ height: 40 }} />
+                </>
+              )}
+
+              {!hasNextPage && trendingList.length > 0 && (
+                <Typography variant="caption" color="text.secondary">
+                  You've caught up with all current trending movies.
+                </Typography>
+              )}
+            </Box>
+          </>
         )}
       </Container>
     </Box>

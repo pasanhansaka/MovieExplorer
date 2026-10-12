@@ -30,6 +30,21 @@ export function useTrendingMovies(timeWindow: 'day' | 'week' = 'week') {
   })
 }
 
+export function useInfiniteTrendingMovies(timeWindow: 'day' | 'week' = 'week') {
+  return useInfiniteQuery({
+    queryKey: movieQueryKeys.trending(timeWindow),
+    queryFn: ({ pageParam = 1 }) => getTrendingMovies(timeWindow, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page < lastPage.total_pages && lastPage.page < 500) {
+        return lastPage.page + 1
+      }
+      return undefined
+    },
+    staleTime: 1000 * 60 * 15, // 15 mins
+  })
+}
+
 export function useMovieDetails(movieId: number) {
   return useQuery({
     queryKey: movieQueryKeys.details(movieId),

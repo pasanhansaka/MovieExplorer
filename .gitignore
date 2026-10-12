@@ -16,6 +16,8 @@ coverage
 .env
 .env.local
 .env.*.local
+.temp
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*

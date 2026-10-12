@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../../services/supabase/client.ts'
 import { useAuth } from '../auth/AuthContext.tsx'
+import { AuthPromptDialog } from '../../components/auth/AuthPromptDialog.tsx'
 import type { FavoriteMovie } from '../../types/favorite.ts'
 import type { Movie, MovieDetails } from '../../types/movie.ts'
 
@@ -13,6 +14,7 @@ interface FavoritesContextType {
   toggleFavorite: (movie: Movie | MovieDetails | FavoriteMovie) => Promise<boolean>
   removeFavorite: (tmdbMovieId: number) => Promise<boolean>
   refreshFavorites: () => Promise<void>
+  promptLogin: (movieTitle?: string) => void
 }
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined)
@@ -39,6 +41,13 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const { user } = useAuth()
   const [favorites, setFavorites] = useState<FavoriteMovie[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  const [authPromptOpen, setAuthPromptOpen] = useState<boolean>(false)
+  const [promptMovieTitle, setPromptMovieTitle] = useState<string | undefined>()
+
+  const promptLogin = useCallback((movieTitle?: string) => {
+    setPromptMovieTitle(movieTitle)
+    setAuthPromptOpen(true)
+  }, [])
 
   // Fetch favorites from Supabase for authenticated user
   const fetchSupabaseFavorites = useCallback(async (userId: string) => {
@@ -126,6 +135,12 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return await removeFavorite(tmdbId)
     }
 
+    // Require authentication to bookmark / add to favorites
+    if (!user?.id) {
+      promptLogin(movie.title)
+      return false
+    }
+
     const newFav: FavoriteMovie = {
       tmdb_movie_id: tmdbId,
       title: movie.title,
@@ -135,7 +150,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       created_at: new Date().toISOString(),
     }
 
-    if (user?.id && isSupabaseConfigured) {
+    if (isSupabaseConfigured) {
       // Optimistic update
       setFavorites((prev) => [newFav, ...prev])
       try {
@@ -160,7 +175,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return false
       }
     } else {
-      // Guest local storage update
+      // Local fallback if Supabase not configured but authenticated in mock/local mode
       const updated = [newFav, ...favorites.filter((f) => f.tmdb_movie_id !== tmdbId)]
       setFavorites(updated)
       saveGuestFavorites(updated)
@@ -214,9 +229,15 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         toggleFavorite,
         removeFavorite,
         refreshFavorites,
+        promptLogin,
       }}
     >
       {children}
+      <AuthPromptDialog
+        open={authPromptOpen}
+        onClose={() => setAuthPromptOpen(false)}
+        movieTitle={promptMovieTitle}
+      />
     </FavoritesContext.Provider>
   )
 }

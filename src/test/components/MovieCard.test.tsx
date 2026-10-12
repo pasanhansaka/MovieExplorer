@@ -59,7 +59,7 @@ describe('MovieCard Component', () => {
     expect(screen.getByText('No Poster Available')).toBeInTheDocument()
   })
 
-  it('allows toggling favorite state on button click', () => {
+  it('prompts user to sign in when unauthenticated user attempts to favorite', () => {
     render(
       <AppProviders>
         <BrowserRouter>
@@ -75,10 +75,9 @@ describe('MovieCard Component', () => {
 
     fireEvent.click(favBtn)
 
-    // Should update aria-label to remove
-    const removeBtn = screen.getByRole('button', {
-      name: /remove blade runner 2049 from favorites/i,
-    })
-    expect(removeBtn).toBeInTheDocument()
+    // Should prompt sign in dialog
+    expect(screen.getByText(/sign in to bookmark/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /create free account/i })).toBeInTheDocument()
   })
 })
