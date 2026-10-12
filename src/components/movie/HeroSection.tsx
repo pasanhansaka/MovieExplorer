@@ -98,7 +98,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movies, movie }) => {
         sx={{
           position: 'relative',
           width: '100%',
-          minHeight: { xs: 480, sm: 530, md: 590 },
+          minHeight: { xs: 500, sm: 540, md: 600 },
           display: 'flex',
           alignItems: 'center',
           overflow: 'hidden',
@@ -119,15 +119,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movies, movie }) => {
             inset: 0,
             background: (theme) =>
               theme.palette.mode === 'dark'
-                ? `linear-gradient(to right, #0B0D13 0%, rgba(11, 13, 19, 0.9) 45%, rgba(11, 13, 19, 0.4) 100%),
+                ? `linear-gradient(to right, #0B0D13 0%, rgba(11, 13, 19, 0.92) 48%, rgba(11, 13, 19, 0.4) 100%),
                    linear-gradient(to top, #0B0D13 0%, transparent 60%)`
-                : `linear-gradient(to right, #F8F9FC 0%, rgba(248, 249, 252, 0.95) 45%, rgba(248, 249, 252, 0.4) 100%),
+                : `linear-gradient(to right, #F8F9FC 0%, rgba(248, 249, 252, 0.96) 48%, rgba(248, 249, 252, 0.4) 100%),
                    linear-gradient(to top, #F8F9FC 0%, transparent 60%)`,
           }}
         />
 
-        {/* Content Container */}
-        <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1, py: { xs: 6, md: 8 } }}>
+        {/* Content Container (clean padding avoiding any collisions) */}
+        <Container
+          maxWidth="xl"
+          sx={{
+            position: 'relative',
+            zIndex: 2,
+            py: { xs: 6, md: 8 },
+            pb: { xs: 9, md: 10 },
+          }}
+        >
           <Box ref={heroContentRef} sx={{ maxWidth: { xs: '100%', md: 680 } }}>
             {/* Meta Tags & Slide Indicator */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mb: 2 }}>
@@ -257,79 +265,47 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movies, movie }) => {
           </Box>
         </Container>
 
-        {/* Carousel Navigation Arrows & Indicators (Displayed if multiple movies) */}
+        {/* Unified Bottom Carousel Controls (Previous + Dots + Next) */}
         {hasMultiple && (
-          <>
-            {/* Previous Slide Button */}
-            <IconButton
-              onClick={handlePrev}
-              aria-label="Previous featured movie"
-              sx={{
-                position: 'absolute',
-                left: { xs: 8, md: 24 },
-                top: '50%',
-                transform: 'translateY(-50%)',
-                zIndex: 3,
-                width: { xs: 38, sm: 44 },
-                height: { xs: 38, sm: 44 },
-                bgcolor: 'rgba(11, 13, 19, 0.7)',
-                backdropFilter: 'blur(8px)',
-                color: '#FFFFFF',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-                '&:hover': {
-                  bgcolor: 'primary.main',
-                  color: '#0A0C10',
-                },
-              }}
-            >
-              <ChevronLeftRoundedIcon />
-            </IconButton>
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: { xs: 16, md: 24 },
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              p: '5px 10px',
+              borderRadius: 6,
+              bgcolor: 'rgba(11, 13, 19, 0.75)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            }}
+          >
+            {/* Previous Button */}
+            <Tooltip title="Previous film">
+              <IconButton
+                onClick={handlePrev}
+                size="small"
+                aria-label="Previous featured movie"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.85)',
+                  p: 0.5,
+                  '&:hover': {
+                    color: 'primary.main',
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                <ChevronLeftRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
-            {/* Next Slide Button */}
-            <IconButton
-              onClick={handleNext}
-              aria-label="Next featured movie"
-              sx={{
-                position: 'absolute',
-                right: { xs: 8, md: 24 },
-                top: '50%',
-                transform: 'translateY(-50%)',
-                zIndex: 3,
-                width: { xs: 38, sm: 44 },
-                height: { xs: 38, sm: 44 },
-                bgcolor: 'rgba(11, 13, 19, 0.7)',
-                backdropFilter: 'blur(8px)',
-                color: '#FFFFFF',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-                '&:hover': {
-                  bgcolor: 'primary.main',
-                  color: '#0A0C10',
-                },
-              }}
-            >
-              <ChevronRightRoundedIcon />
-            </IconButton>
-
-            {/* Bottom Slide Indicator Pills */}
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: 20,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 3,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.25,
-                p: '6px 14px',
-                borderRadius: 5,
-                bgcolor: 'rgba(11, 13, 19, 0.65)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}
-            >
+            {/* Slide Indicator Pills */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 0.5 }}>
               {featuredList.map((m, index) => {
                 const isActive = index === currentIndex
                 return (
@@ -338,11 +314,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movies, movie }) => {
                     onClick={() => setCurrentIndex(index)}
                     sx={{
                       cursor: 'pointer',
-                      width: isActive ? 28 : 8,
-                      height: 8,
+                      width: isActive ? 24 : 7,
+                      height: 7,
                       borderRadius: 4,
                       bgcolor: isActive ? 'primary.main' : 'rgba(255, 255, 255, 0.35)',
-                      boxShadow: isActive ? '0 0 10px rgba(245, 166, 35, 0.6)' : 'none',
+                      boxShadow: isActive ? '0 0 10px rgba(245, 166, 35, 0.7)' : 'none',
                       transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
                       '&:hover': {
                         bgcolor: isActive ? 'primary.main' : 'rgba(255, 255, 255, 0.7)',
@@ -353,7 +329,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movies, movie }) => {
                 )
               })}
             </Box>
-          </>
+
+            {/* Next Button */}
+            <Tooltip title="Next film">
+              <IconButton
+                onClick={handleNext}
+                size="small"
+                aria-label="Next featured movie"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.85)',
+                  p: 0.5,
+                  '&:hover': {
+                    color: 'primary.main',
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                <ChevronRightRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
         )}
       </Box>
 
