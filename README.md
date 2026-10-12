@@ -1,10 +1,10 @@
 # 🎬 Movie Explorer
 
-> **Loons Lab Developer Selection Test**  
-> Complete Implementation from Zero to Production  
-> **Production Frontend**: React 19 + TypeScript + Vite + Material UI (MUI v9)  
-> **Backend & Services**: Supabase (Auth + PostgreSQL + Row Level Security + Edge Functions Proxy)  
-> **External Movie Data**: The Movie Database (TMDb) API via secure Edge Function  
+> **Loons Lab Developer Selection Test**
+> Complete Implementation from Zero to Production
+> **Production Frontend**: React 19 + TypeScript + Vite + Material UI (MUI v9)
+> **Backend & Services**: Supabase (Auth + PostgreSQL + Row Level Security + Edge Functions Proxy)
+> **External Movie Data**: The Movie Database (TMDb) API via secure Edge Function
 
 ---
 
@@ -161,7 +161,7 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 VITE_TMDB_PROXY_URL=https://your-project-id.supabase.co/functions/v1/tmdb
 ```
 
-> ⚠️ **SECURITY MANDATE**:  
+> ⚠️ **SECURITY MANDATE**:
 > The TMDb Bearer Token (`TMDB_ACCESS_TOKEN`) must **NEVER** be stored in any frontend environment variable or committed to Git. It is configured exclusively as a secure secret in Supabase Edge Functions (`supabase secrets set TMDB_ACCESS_TOKEN="..."`).
 
 ---
@@ -289,30 +289,8 @@ The provided [`vercel.json`](vercel.json) handles client-side single-page applic
 
 ## 📜 TMDb Attribution & Disclaimer
 
-> This product uses the TMDB API but is not endorsed or certified by TMDB.  
+> This product uses the TMDB API but is not endorsed or certified by TMDB.
 > All movie titles, descriptions, artwork, and video media are copyright of their respective rights holders and The Movie Database.
 
 ---
 
-## 📋 Loons Lab Developer Selection Test Checklist
-
-- [x] React 19 + TypeScript strict configuration
-- [x] Vite tooling & production build verification
-- [x] Material UI v9 theme system with Dark and Light mode
-- [x] React Router navigation with `/`, `/search`, `/movie/:id`, `/favorites`, `/login`, `/signup`, `404`
-- [x] TanStack Query for server-state caching, retries, and pagination
-- [x] Supabase Authentication (Login, Signup with Username profile)
-- [x] Supabase PostgreSQL database schema with migrations
-- [x] Supabase Row Level Security (RLS) enforcement
-- [x] Secure TMDb proxy Edge Function with strict parameter validation
-- [x] Hero section featuring trending movie, backdrop, and details
-- [x] Real movie search with query debounce and localStorage persistence
-- [x] Advanced filters (Genre, Release Year, Min Rating, Sort order)
-- [x] Infinite scroll and bonus **Load More** button
-- [x] Full movie details with cast carousel and official YouTube trailer dialog
-- [x] Favorites toggle with instant feedback and guest-to-cloud sync
-- [x] Anime.js micro-animations respecting `prefers-reduced-motion`
-- [x] Vitest automated test suite (10 test suites, 42 passing tests)
-- [x] Clean TypeScript check (`npm run typecheck` passes with 0 errors)
-- [x] Clean ESLint check (`npm run lint` passes with 0 errors)
-- [x] Vercel SPA deployment configuration (`vercel.json`)
