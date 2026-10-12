@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../../services/supabase/client.ts'
 import { useAuth } from '../auth/AuthContext.tsx'
-import { AuthPromptDialog } from '../../components/auth/AuthPromptDialog.tsx'
 import type { FavoriteMovie } from '../../types/favorite.ts'
 import type { Movie, MovieDetails } from '../../types/movie.ts'
 
@@ -15,6 +14,9 @@ interface FavoritesContextType {
   removeFavorite: (tmdbMovieId: number) => Promise<boolean>
   refreshFavorites: () => Promise<void>
   promptLogin: (movieTitle?: string) => void
+  authPromptOpen: boolean
+  closeAuthPrompt: () => void
+  promptMovieTitle?: string
 }
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined)
@@ -220,6 +222,10 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }
 
+  const closeAuthPrompt = useCallback(() => {
+    setAuthPromptOpen(false)
+  }, [])
+
   return (
     <FavoritesContext.Provider
       value={{
@@ -230,14 +236,12 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         removeFavorite,
         refreshFavorites,
         promptLogin,
+        authPromptOpen,
+        closeAuthPrompt,
+        promptMovieTitle,
       }}
     >
       {children}
-      <AuthPromptDialog
-        open={authPromptOpen}
-        onClose={() => setAuthPromptOpen(false)}
-        movieTitle={promptMovieTitle}
-      />
     </FavoritesContext.Provider>
   )
 }

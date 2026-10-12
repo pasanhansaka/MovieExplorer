@@ -9,10 +9,11 @@ import {
   Box,
   Container,
   Tooltip,
-  Menu,
+  Popover,
   MenuItem,
   Avatar,
   Badge,
+  Chip,
   Drawer,
   List,
   ListItem,
@@ -29,6 +30,8 @@ import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded'
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
+import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded'
 import { useAppTheme } from '../../features/theme/ThemeContext.tsx'
 import { useAuth } from '../../features/auth/AuthContext.tsx'
 import { useFavorites } from '../../features/favorites/FavoritesContext.tsx'
@@ -188,27 +191,71 @@ export const Navbar: React.FC = () => {
             {/* Authenticated user menu vs Guest Login/Register */}
             {user ? (
               <>
-                <Tooltip title="Account menu">
-                  <IconButton
+                <Tooltip title="Your profile & watchlist">
+                  <Button
                     onClick={handleOpenUserMenu}
                     aria-label="Open account options"
-                    sx={{ p: 0.5, border: '2px solid', borderColor: 'primary.main' }}
+                    variant="text"
+                    sx={{
+                      p: { xs: 0.5, sm: '4px 10px 4px 6px' },
+                      borderRadius: 5,
+                      border: '1px solid',
+                      borderColor: Boolean(anchorEl) ? 'primary.main' : 'divider',
+                      bgcolor: Boolean(anchorEl) ? 'action.selected' : 'action.hover',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      textTransform: 'none',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        borderColor: 'primary.main',
+                        bgcolor: 'action.selected',
+                      },
+                    }}
                   >
                     <Avatar
                       sx={{
-                        width: 34,
-                        height: 34,
+                        width: 32,
+                        height: 32,
                         bgcolor: 'primary.main',
                         color: '#0A0C10',
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
                       }}
                     >
                       {username.charAt(0).toUpperCase()}
                     </Avatar>
-                  </IconButton>
+                    <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'left', mr: 0.5 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: 'block',
+                          fontWeight: 700,
+                          lineHeight: 1.1,
+                          color: 'text.primary',
+                          maxWidth: 105,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {username}
+                      </Typography>
+                    </Box>
+                    <KeyboardArrowDownRoundedIcon
+                      sx={{
+                        fontSize: 18,
+                        color: 'text.secondary',
+                        transform: Boolean(anchorEl) ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.2s ease',
+                        display: { xs: 'none', sm: 'block' },
+                      }}
+                    />
+                  </Button>
                 </Tooltip>
-                <Menu
+
+                {/* Redesigned Premium Profile Popover */}
+                <Popover
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
                   onClose={handleCloseUserMenu}
@@ -217,36 +264,214 @@ export const Navbar: React.FC = () => {
                   slotProps={{
                     paper: {
                       sx: {
-                        minWidth: 180,
-                        mt: 1,
+                        width: 310,
+                        mt: 1.5,
+                        borderRadius: 3.5,
+                        p: 0,
+                        overflow: 'hidden',
+                        bgcolor: 'background.paper',
                         border: '1px solid',
-                        borderColor: 'divider',
+                        borderColor: (theme) =>
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(245, 166, 35, 0.25)'
+                            : 'divider',
+                        boxShadow: (theme) =>
+                          theme.palette.mode === 'dark'
+                            ? '0 20px 48px -8px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(245, 166, 35, 0.2)'
+                            : '0 20px 48px -8px rgba(0, 0, 0, 0.18)',
                       },
                     },
                   }}
                 >
-                  <Box sx={{ px: 2, py: 1.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                      {username}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {user.email}
-                    </Typography>
-                  </Box>
-                  <Divider />
-                  <MenuItem
-                    component={RouterLink}
-                    to="/favorites"
-                    onClick={handleCloseUserMenu}
+                  {/* Profile Header Banner */}
+                  <Box
+                    sx={{
+                      p: 2.5,
+                      background: (theme) =>
+                        theme.palette.mode === 'dark'
+                          ? 'linear-gradient(135deg, rgba(245, 166, 35, 0.15) 0%, rgba(15, 18, 26, 0.95) 100%)'
+                          : 'linear-gradient(135deg, rgba(245, 166, 35, 0.12) 0%, rgba(248, 249, 252, 0.95) 100%)',
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                    }}
                   >
-                    <BookmarkRoundedIcon sx={{ mr: 1.5, fontSize: 20 }} />
-                    My Saved Favorites
-                  </MenuItem>
-                  <MenuItem onClick={handleSignOut} sx={{ color: 'error.main' }}>
-                    <LogoutRoundedIcon sx={{ mr: 1.5, fontSize: 20 }} />
-                    Sign Out
-                  </MenuItem>
-                </Menu>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
+                      <Badge
+                        overlap="circular"
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        variant="dot"
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            bgcolor: '#22C55E',
+                            boxShadow: '0 0 0 2px #0B0D13',
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                          },
+                        }}
+                      >
+                        <Avatar
+                          sx={{
+                            width: 52,
+                            height: 52,
+                            bgcolor: 'primary.main',
+                            color: '#0A0C10',
+                            fontWeight: 800,
+                            fontSize: '1.4rem',
+                            boxShadow: '0 4px 16px rgba(245, 166, 35, 0.35)',
+                            border: '2px solid',
+                            borderColor: 'background.paper',
+                          }}
+                        >
+                          {username.charAt(0).toUpperCase()}
+                        </Avatar>
+                      </Badge>
+                      <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: 800,
+                            fontSize: '1.05rem',
+                            lineHeight: 1.2,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {username}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            display: 'block',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            fontSize: '0.78rem',
+                            mt: 0.25,
+                          }}
+                        >
+                          {user.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Chip
+                      icon={<VerifiedRoundedIcon sx={{ fontSize: '0.95rem !important', color: 'primary.main !important' }} />}
+                      label="Movie Explorer Member"
+                      size="small"
+                      sx={{
+                        bgcolor: 'action.hover',
+                        fontWeight: 600,
+                        fontSize: '0.72rem',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    />
+                  </Box>
+
+                  {/* Watchlist Quick Access Summary */}
+                  <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+                    <Box
+                      component={RouterLink}
+                      to="/favorites"
+                      onClick={handleCloseUserMenu}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        p: 1.5,
+                        borderRadius: 2.5,
+                        bgcolor: 'action.hover',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          bgcolor: 'action.selected',
+                          borderColor: 'primary.main',
+                          transform: 'translateY(-1px)',
+                        },
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 2,
+                            bgcolor: 'primary.main',
+                            color: '#0A0C10',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <BookmarkRoundedIcon sx={{ fontSize: 20 }} />
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                            My Watchlist
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {favorites.length} {favorites.length === 1 ? 'title' : 'titles'} saved
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700 }}>
+                        Open →
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Discover Link */}
+                  <Box sx={{ px: 1, py: 0.5 }}>
+                    <MenuItem
+                      component={RouterLink}
+                      to="/search"
+                      onClick={handleCloseUserMenu}
+                      sx={{
+                        borderRadius: 2,
+                        py: 1,
+                        px: 1.5,
+                        fontWeight: 600,
+                        fontSize: '0.88rem',
+                      }}
+                    >
+                      <SearchRoundedIcon sx={{ mr: 1.5, fontSize: 20, color: 'text.secondary' }} />
+                      Discover & Search Films
+                    </MenuItem>
+                  </Box>
+
+                  <Divider sx={{ my: 0.5 }} />
+
+                  {/* Sign Out Button */}
+                  <Box sx={{ p: 2 }}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      fullWidth
+                      startIcon={<LogoutRoundedIcon />}
+                      onClick={handleSignOut}
+                      sx={{
+                        borderRadius: 2.5,
+                        py: 1,
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        borderColor: 'rgba(239, 68, 68, 0.35)',
+                        bgcolor: 'rgba(239, 68, 68, 0.05)',
+                        '&:hover': {
+                          bgcolor: 'rgba(239, 68, 68, 0.15)',
+                          borderColor: 'error.main',
+                        },
+                      }}
+                    >
+                      Sign Out
+                    </Button>
+                  </Box>
+                </Popover>
               </>
             ) : (
               <Box sx={{ display: 'flex', gap: 1 }}>

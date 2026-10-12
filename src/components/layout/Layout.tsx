@@ -4,8 +4,12 @@ import { Box } from '@mui/material'
 import { Navbar } from './Navbar.tsx'
 import { Footer } from './Footer.tsx'
 import { ErrorBoundary } from '../feedback/ErrorBoundary.tsx'
+import { AuthPromptDialog } from '../auth/AuthPromptDialog.tsx'
+import { useFavorites } from '../../features/favorites/FavoritesContext.tsx'
 
 export const Layout: React.FC = () => {
+  const { authPromptOpen, closeAuthPrompt, promptMovieTitle } = useFavorites()
+
   return (
     <Box
       sx={{
@@ -29,6 +33,11 @@ export const Layout: React.FC = () => {
         </ErrorBoundary>
       </Box>
       <Footer />
+      <AuthPromptDialog
+        open={authPromptOpen}
+        onClose={closeAuthPrompt}
+        movieTitle={promptMovieTitle}
+      />
     </Box>
   )
 }

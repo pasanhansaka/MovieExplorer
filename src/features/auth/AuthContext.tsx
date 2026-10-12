@@ -171,6 +171,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
+      // Auto login: establish session immediately upon successful signup
+      if (data.session) {
+        await handleSession(data.session)
+      } else {
+        try {
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+          })
+          if (!signInErr && signInData.session) {
+            await handleSession(signInData.session)
+          }
+        } catch {
+          // signIn fallback
+        }
+      }
+
       return { success: true }
     } catch (err: any) {
       const msg = err.message || 'Failed to register account'

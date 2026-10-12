@@ -65,10 +65,10 @@ export const SignupPage: React.FC = () => {
     setSubmitting(false)
 
     if (result.success) {
-      setSuccessMsg('Account created successfully! Redirecting...')
+      setSuccessMsg('Account created successfully! Logging you in...')
       setTimeout(() => {
         navigate('/')
-      }, 1200)
+      }, 800)
     } else {
       setAuthError(result.error || 'Failed to create account')
     }
