@@ -1,6 +1,8 @@
 import React from 'react'
 import { Box, Container, Typography, Divider, Stack, Link } from '@mui/material'
 import MovieFilterRoundedIcon from '@mui/icons-material/MovieFilterRounded'
+import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded'
+import GitHubIcon from '@mui/icons-material/GitHub'
 
 export const Footer: React.FC = () => {
   return (
@@ -25,8 +27,8 @@ export const Footer: React.FC = () => {
             mb: 4,
           }}
         >
-          {/* Brand info */}
-          <Box sx={{ maxWidth: 450 }}>
+          {/* Brand & Creator info */}
+          <Box sx={{ maxWidth: 480 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
               <MovieFilterRoundedIcon sx={{ color: 'primary.main', mr: 1, fontSize: 28 }} />
               <Typography
@@ -40,8 +42,21 @@ export const Footer: React.FC = () => {
                 MOVIE EXPLORER
               </Typography>
             </Box>
-            <Typography variant="body2" color="text.secondary">
-              A cinematic movie discovery and personal collection management platform built for the Loons Lab Developer Selection Test.
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, lineHeight: 1.6 }}>
+              A cinematic movie discovery and personal collection management platform built with React 19, TypeScript, Material UI & Supabase.
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.75,
+                color: 'text.secondary',
+                fontWeight: 500,
+              }}
+            >
+              Made with{' '}
+              <FavoriteRoundedIcon sx={{ fontSize: 14, color: '#EF4444' }} /> for the community.
             </Typography>
           </Box>
 
@@ -59,7 +74,7 @@ export const Footer: React.FC = () => {
             <Typography variant="caption" color="text.primary" sx={{ display: 'block', fontWeight: 600 }} gutterBottom>
               Data & Media Attribution
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.5 }}>
               This product uses the TMDb API but is not endorsed or certified by TMDb. All movie metadata, imagery, and video references are copyright of their respective owners.
             </Typography>
           </Box>
@@ -77,10 +92,35 @@ export const Footer: React.FC = () => {
           }}
         >
           <Typography variant="caption" color="text.secondary">
-            © {new Date().getFullYear()} Movie Explorer. Built with React, TypeScript, Material UI & Supabase.
+            © 2026{' '}
+            <Link
+              href="https://github.com/pasanhansaka"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="primary.main"
+              sx={{ fontWeight: 700, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+            >
+              Pasan Hansaka
+            </Link>
+            . All rights reserved.
           </Typography>
 
-          <Stack direction="row" spacing={3}>
+          <Stack direction="row" spacing={3} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <Link
+              href="https://github.com/pasanhansaka/MovieExplorer"
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                '&:hover': { color: 'primary.main' },
+              }}
+            >
+              <GitHubIcon sx={{ fontSize: 16 }} /> GitHub Repository
+            </Link>
             <Link
               href="https://developer.themoviedb.org/docs"
               target="_blank"

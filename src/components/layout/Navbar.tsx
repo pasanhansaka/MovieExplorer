@@ -10,7 +10,6 @@ import {
   Container,
   Tooltip,
   Popover,
-  MenuItem,
   Avatar,
   Badge,
   Chip,
@@ -427,22 +426,31 @@ export const Navbar: React.FC = () => {
                   </Box>
 
                   {/* Discover Link */}
-                  <Box sx={{ px: 1, py: 0.5 }}>
-                    <MenuItem
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Button
                       component={RouterLink}
                       to="/search"
                       onClick={handleCloseUserMenu}
+                      fullWidth
+                      startIcon={<SearchRoundedIcon sx={{ color: 'primary.main' }} />}
                       sx={{
+                        justifyContent: 'flex-start',
                         borderRadius: 2,
                         py: 1,
                         px: 1.5,
                         fontWeight: 600,
                         fontSize: '0.88rem',
+                        color: 'text.primary',
+                        bgcolor: 'action.hover',
+                        textTransform: 'none',
+                        '&:hover': {
+                          bgcolor: 'action.selected',
+                          color: 'primary.main',
+                        },
                       }}
                     >
-                      <SearchRoundedIcon sx={{ mr: 1.5, fontSize: 20, color: 'text.secondary' }} />
                       Discover & Search Films
-                    </MenuItem>
+                    </Button>
                   </Box>
 
                   <Divider sx={{ my: 0.5 }} />

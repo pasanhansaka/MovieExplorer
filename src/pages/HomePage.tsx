@@ -51,8 +51,8 @@ export const HomePage: React.FC = () => {
     return list
   }, [data])
 
-  const heroMovie = allMovies.length > 0 ? allMovies[0] : null
-  const trendingList = allMovies.slice(1)
+  const heroMovies = allMovies.slice(0, 6)
+  const trendingList = allMovies.length > 6 ? allMovies.slice(6) : allMovies
 
   // Infinite scroll observer sentinel
   const { ref: loadMoreObserverRef, inView } = useInView({
@@ -68,12 +68,12 @@ export const HomePage: React.FC = () => {
 
   return (
     <Box sx={{ pb: 8 }}>
-      {/* Hero Section */}
+      {/* Hero Carousel Section */}
       <Container maxWidth="xl" disableGutters sx={{ px: { xs: 2, sm: 3 } }}>
         {isLoading ? (
           <HeroSkeleton />
-        ) : heroMovie ? (
-          <HeroSection movie={heroMovie} />
+        ) : heroMovies.length > 0 ? (
+          <HeroSection movies={heroMovies} />
         ) : null}
       </Container>
 
@@ -158,7 +158,7 @@ export const HomePage: React.FC = () => {
             message={normalizeApiError(error)}
             onRetry={() => refetch()}
           />
-        ) : trendingList.length === 0 && !heroMovie ? (
+        ) : allMovies.length === 0 ? (
           <EmptyState
             title="No Trending Movies Available"
             description="Could not find current trending films. Please try again shortly or configure your TMDb proxy credentials."

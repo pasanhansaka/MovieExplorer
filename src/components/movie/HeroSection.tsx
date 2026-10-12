@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import {
   Box,
@@ -14,6 +14,8 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import BookmarkBorderRoundedIcon from '@mui/icons-material/BookmarkBorderRounded'
 import BookmarkRoundedIcon from '@mui/icons-material/BookmarkRounded'
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import type { Movie } from '../../types/movie.ts'
 import { formatRating, formatReleaseYear, getTMDBImageUrl } from '../../utils/formatters.ts'
 import { useFavorites } from '../../features/favorites/FavoritesContext.tsx'
@@ -22,48 +24,81 @@ import { TrailerModal } from './TrailerModal.tsx'
 import { animateEntrance, animateFavoritePop } from '../../utils/animations.ts'
 
 interface HeroSectionProps {
-  movie: Movie
+  movies?: Movie[]
+  movie?: Movie
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ movie }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ movies, movie }) => {
   const { isFavorite, toggleFavorite } = useFavorites()
   const [trailerOpen, setTrailerOpen] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
   const heroContentRef = useRef<HTMLDivElement | null>(null)
   const favBtnRef = useRef<HTMLButtonElement | null>(null)
 
-  const { data: videosData } = useMovieVideos(movie.id)
+  // Construct featured movie list (up to 6 trending films)
+  const featuredList = movies && movies.length > 0 ? movies.slice(0, 6) : (movie ? [movie] : [])
+  const hasMultiple = featuredList.length > 1
+  const activeMovie = featuredList[currentIndex] || featuredList[0]
+
+  const { data: videosData } = useMovieVideos(activeMovie ? activeMovie.id : 0)
   const officialTrailer = videosData?.results?.find(
     (v) => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser')
   )
 
-  const favorited = isFavorite(movie.id)
-  const backdropUrl = getTMDBImageUrl(movie.backdrop_path, 'original')
-  const rating = formatRating(movie.vote_average)
-  const releaseYear = formatReleaseYear(movie.release_date)
+  const handleNext = useCallback(() => {
+    if (!hasMultiple) return
+    setCurrentIndex((prev) => (prev + 1) % featuredList.length)
+  }, [hasMultiple, featuredList.length])
 
+  const handlePrev = useCallback(() => {
+    if (!hasMultiple) return
+    setCurrentIndex((prev) => (prev - 1 + featuredList.length) % featuredList.length)
+  }, [hasMultiple, featuredList.length])
+
+  // Auto rotation timer (advances every 7 seconds when not hovered)
+  useEffect(() => {
+    if (!hasMultiple || isPaused) return
+    const timer = setInterval(() => {
+      handleNext()
+    }, 7000)
+    return () => clearInterval(timer)
+  }, [hasMultiple, isPaused, handleNext])
+
+  // Trigger entrance animation on slide change
   useEffect(() => {
     if (!heroContentRef.current) return
     const cleanup = animateEntrance(heroContentRef.current, {
-      duration: 600,
-      translateY: [30, 0],
+      duration: 500,
+      translateY: [20, 0],
+      opacity: [0, 1],
     })
     return cleanup
-  }, [movie.id])
+  }, [currentIndex])
+
+  if (!activeMovie) return null
+
+  const favorited = isFavorite(activeMovie.id)
+  const backdropUrl = getTMDBImageUrl(activeMovie.backdrop_path, 'original')
+  const rating = formatRating(activeMovie.vote_average)
+  const releaseYear = formatReleaseYear(activeMovie.release_date)
 
   const handleFavoriteClick = () => {
     if (favBtnRef.current) {
       animateFavoritePop(favBtnRef.current)
     }
-    toggleFavorite(movie)
+    toggleFavorite(activeMovie)
   }
 
   return (
     <>
       <Box
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
         sx={{
           position: 'relative',
           width: '100%',
-          minHeight: { xs: 460, sm: 520, md: 580 },
+          minHeight: { xs: 480, sm: 530, md: 590 },
           display: 'flex',
           alignItems: 'center',
           overflow: 'hidden',
@@ -74,6 +109,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movie }) => {
           backgroundColor: '#10141E',
           backgroundSize: 'cover',
           backgroundPosition: 'center 20%',
+          transition: 'background-image 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)',
         }}
       >
         {/* Dark Cinematic Gradient Overlay */}
@@ -93,10 +129,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movie }) => {
         {/* Content Container */}
         <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1, py: { xs: 6, md: 8 } }}>
           <Box ref={heroContentRef} sx={{ maxWidth: { xs: '100%', md: 680 } }}>
-            {/* Meta Tags */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+            {/* Meta Tags & Slide Indicator */}
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mb: 2 }}>
               <Chip
-                label="FEATURED FILM"
+                label={hasMultiple ? `TRENDING #${currentIndex + 1}` : 'FEATURED FILM'}
                 size="small"
                 sx={{
                   bgcolor: 'primary.main',
@@ -137,7 +173,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movie }) => {
                 textShadow: '0 2px 10px rgba(0,0,0,0.3)',
               }}
             >
-              {movie.title}
+              {activeMovie.title}
             </Typography>
 
             {/* Overview excerpt */}
@@ -155,14 +191,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movie }) => {
                 textShadow: '0 1px 4px rgba(0,0,0,0.4)',
               }}
             >
-              {movie.overview || 'No synopsis available for this featured presentation.'}
+              {activeMovie.overview || 'No synopsis available for this featured presentation.'}
             </Typography>
 
             {/* Action Buttons */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
               <Button
                 component={RouterLink}
-                to={`/movie/${movie.id}`}
+                to={`/movie/${activeMovie.id}`}
                 variant="contained"
                 color="primary"
                 size="large"
@@ -220,6 +256,105 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movie }) => {
             </Box>
           </Box>
         </Container>
+
+        {/* Carousel Navigation Arrows & Indicators (Displayed if multiple movies) */}
+        {hasMultiple && (
+          <>
+            {/* Previous Slide Button */}
+            <IconButton
+              onClick={handlePrev}
+              aria-label="Previous featured movie"
+              sx={{
+                position: 'absolute',
+                left: { xs: 8, md: 24 },
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 3,
+                width: { xs: 38, sm: 44 },
+                height: { xs: 38, sm: 44 },
+                bgcolor: 'rgba(11, 13, 19, 0.7)',
+                backdropFilter: 'blur(8px)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                '&:hover': {
+                  bgcolor: 'primary.main',
+                  color: '#0A0C10',
+                },
+              }}
+            >
+              <ChevronLeftRoundedIcon />
+            </IconButton>
+
+            {/* Next Slide Button */}
+            <IconButton
+              onClick={handleNext}
+              aria-label="Next featured movie"
+              sx={{
+                position: 'absolute',
+                right: { xs: 8, md: 24 },
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 3,
+                width: { xs: 38, sm: 44 },
+                height: { xs: 38, sm: 44 },
+                bgcolor: 'rgba(11, 13, 19, 0.7)',
+                backdropFilter: 'blur(8px)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                '&:hover': {
+                  bgcolor: 'primary.main',
+                  color: '#0A0C10',
+                },
+              }}
+            >
+              <ChevronRightRoundedIcon />
+            </IconButton>
+
+            {/* Bottom Slide Indicator Pills */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 20,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 3,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.25,
+                p: '6px 14px',
+                borderRadius: 5,
+                bgcolor: 'rgba(11, 13, 19, 0.65)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              {featuredList.map((m, index) => {
+                const isActive = index === currentIndex
+                return (
+                  <Box
+                    key={m.id}
+                    onClick={() => setCurrentIndex(index)}
+                    sx={{
+                      cursor: 'pointer',
+                      width: isActive ? 28 : 8,
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: isActive ? 'primary.main' : 'rgba(255, 255, 255, 0.35)',
+                      boxShadow: isActive ? '0 0 10px rgba(245, 166, 35, 0.6)' : 'none',
+                      transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                      '&:hover': {
+                        bgcolor: isActive ? 'primary.main' : 'rgba(255, 255, 255, 0.7)',
+                      },
+                    }}
+                    title={m.title}
+                  />
+                )
+              })}
+            </Box>
+          </>
+        )}
       </Box>
 
       {/* Trailer Dialog */}
@@ -227,7 +362,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ movie }) => {
         open={trailerOpen}
         onClose={() => setTrailerOpen(false)}
         videoKey={officialTrailer?.key}
-        movieTitle={movie.title}
+        movieTitle={activeMovie.title}
       />
     </>
   )
