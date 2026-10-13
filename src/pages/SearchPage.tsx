@@ -199,6 +199,13 @@ export const SearchPage: React.FC = () => {
         <>
           <MovieGrid movies={movies} />
 
+          {/* Smooth incoming items skeleton indicator */}
+          {isFetchingNextPage && (
+            <Box sx={{ mt: 3 }}>
+              <MovieGridSkeleton count={5} />
+            </Box>
+          )}
+
           {/* Load More and Infinite Scroll Trigger */}
           <Box sx={{ mt: 6, mb: 4, textAlign: 'center' }}>
             {hasNextPage && (
