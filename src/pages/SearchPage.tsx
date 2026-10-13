@@ -199,10 +199,25 @@ export const SearchPage: React.FC = () => {
         <>
           <MovieGrid movies={movies} />
 
-          {/* Smooth incoming items skeleton indicator */}
+          {/* Smooth loading indicator while fetching next page */}
           {isFetchingNextPage && (
-            <Box sx={{ mt: 3 }}>
-              <MovieGridSkeleton count={5} />
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1.5,
+                mt: 4,
+                py: 1.5,
+                borderRadius: 3,
+                bgcolor: 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+              }}
+            >
+              <CircularProgress size={20} sx={{ color: 'primary.main' }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                Loading more movies...
+              </Typography>
             </Box>
           )}
 

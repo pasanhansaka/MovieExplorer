@@ -27,6 +27,7 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   const { isFavorite, toggleFavorite } = useFavorites()
   const [imageError, setImageError] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
   const favBtnRef = useRef<HTMLButtonElement | null>(null)
 
   const movieId = 'tmdb_movie_id' in movie ? movie.tmdb_movie_id : movie.id
@@ -73,20 +74,42 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
       aria-label={`View details for ${movie.title}`}
     >
       {/* 2:3 Aspect ratio container */}
-      <Box sx={{ position: 'relative', width: '100%', aspectRatio: '2 / 3', overflow: 'hidden', bgcolor: 'background.default' }}>
+      <Box sx={{ position: 'relative', width: '100%', aspectRatio: '2 / 3', overflow: 'hidden', bgcolor: 'background.paper' }}>
+        {/* Placeholder skeleton shimmer while image loads */}
+        {posterUrl && !imageLoaded && !imageError && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmerPulse 1.5s infinite linear',
+              '@keyframes shimmerPulse': {
+                '0%': { backgroundPosition: '200% 0' },
+                '100%': { backgroundPosition: '-200% 0' },
+              },
+            }}
+          />
+        )}
+
         {posterUrl && !imageError ? (
           <CardMedia
             component="img"
             image={posterUrl}
             alt={movie.title}
             loading="lazy"
+            onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
             className="movie-poster"
             sx={{
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              transition: 'transform 0.35s ease',
+              opacity: imageLoaded ? 1 : 0,
+              transition: 'opacity 0.28s ease, transform 0.35s ease',
             }}
           />
         ) : (
